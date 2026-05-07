@@ -14,6 +14,13 @@ MONTH_NAMES = [
     "07-July", "08-August", "09-September", "10-October", "11-November", "12-December",
 ]
 
+SCHEMES = {
+    "year-month-camera": ("Year / Month / Camera", ("year", "month", "camera")),
+    "year-camera-month": ("Year / Camera / Month", ("year", "camera", "month")),
+    "camera-year-month": ("Camera / Year / Month", ("camera", "year", "month")),
+}
+DEFAULT_SCHEME = "year-month-camera"
+
 
 @dataclass
 class PlannedEntry:
@@ -60,12 +67,26 @@ class Manifest:
         return cls.from_dict(json.loads(path.read_text()))
 
 
-def _media_dest(dest_root: Path, taken: datetime | None, camera: str, name: str) -> Path:
+def _media_dest(
+    dest_root: Path,
+    taken: datetime | None,
+    camera: str,
+    name: str,
+    scheme: str = DEFAULT_SCHEME,
+) -> Path:
+    if scheme not in SCHEMES:
+        scheme = DEFAULT_SCHEME
+    _, order = SCHEMES[scheme]
+
+    parts: dict[str, str] = {
+        "year": f"{taken.year:04d}" if taken else "Unknown-Date",
+        "month": MONTH_NAMES[taken.month - 1] if taken else "Unknown-Month",
+        "camera": camera or "Unknown-Camera",
+    }
     if taken is None:
-        return dest_root / "media" / "Unknown-Date" / camera / name
-    year = f"{taken.year:04d}"
-    month = MONTH_NAMES[taken.month - 1]
-    return dest_root / "media" / year / month / camera / name
+        # Collapse to Unknown-Date/<camera>/file regardless of scheme
+        return dest_root / "media" / "Unknown-Date" / parts["camera"] / name
+    return dest_root / "media" / Path(*[parts[p] for p in order]) / name
 
 
 def _resolve_conflict(used: set[Path], dest: Path) -> Path:
@@ -87,6 +108,7 @@ def build_manifest(
     dest_root: Path,
     scanned: list[ScannedFile],
     metas: dict[Path, FileMeta],
+    scheme: str = DEFAULT_SCHEME,
 ) -> Manifest:
     source_root = source_root.expanduser().resolve()
     dest_root = dest_root.expanduser().resolve()
@@ -105,7 +127,7 @@ def build_manifest(
         meta = metas.get(f.path)
         camera = meta.camera if meta else UNKNOWN_CAMERA
         taken = meta.taken if meta else None
-        dest = _media_dest(dest_root, taken, camera, f.path.name)
+        dest = _media_dest(dest_root, taken, camera, f.path.name, scheme)
         dest = _resolve_conflict(used_destinations, dest)
         entries.append(PlannedEntry(
             source=str(f.path),

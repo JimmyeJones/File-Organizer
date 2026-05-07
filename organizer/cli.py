@@ -19,7 +19,7 @@ from rich.prompt import Confirm, Prompt
 
 from .commit import execute
 from .metadata import FileMeta, chunked, exiftool_available, extract_batch
-from .planner import Manifest, build_manifest
+from .planner import DEFAULT_SCHEME, SCHEMES, Manifest, build_manifest
 from .preview import render_summary, render_tree
 from .scan import ScannedFile, scan
 
@@ -73,6 +73,29 @@ def _extract_with_progress(
     return metas
 
 
+def _interactive_scheme(console: Console, preset: str | None) -> str:
+    if preset:
+        return preset
+    console.print()
+    console.print("[bold]Choose folder scheme:[/bold]")
+    keys = list(SCHEMES.keys())
+    for i, key in enumerate(keys, 1):
+        label, _ = SCHEMES[key]
+        example_parts = []
+        sample = {"year": "2024", "month": "03-March", "camera": "Canon-EOS-R5"}
+        _, order = SCHEMES[key]
+        example = "/".join(sample[p] for p in order) + "/IMG_1234.jpg"
+        marker = " (default)" if key == DEFAULT_SCHEME else ""
+        console.print(f"  [cyan]{i}[/cyan] — {label}{marker}")
+        console.print(f"      [dim]media/{example}[/dim]")
+    choice = Prompt.ask(
+        "Choice",
+        choices=[str(i) for i in range(1, len(keys) + 1)],
+        default=str(keys.index(DEFAULT_SCHEME) + 1),
+    )
+    return keys[int(choice) - 1]
+
+
 def _interactive_paths(console: Console, source: Path | None, dest: Path | None) -> tuple[Path, Path]:
     if source is None:
         source = Path(Prompt.ask("[bold]Source folder[/bold] (media to organize)")).expanduser()
@@ -120,6 +143,10 @@ def main() -> int:
     parser.add_argument("--manifest", type=Path, help="Path to save/load manifest JSON")
     parser.add_argument("--resume", action="store_true", help="Resume from existing manifest")
     parser.add_argument("--yes", action="store_true", help="Skip confirmation, apply plan")
+    parser.add_argument(
+        "--scheme", choices=list(SCHEMES.keys()),
+        help="Folder scheme (skips interactive prompt). Default: year-month-camera",
+    )
     args = parser.parse_args()
 
     console = Console()
@@ -154,7 +181,8 @@ def main() -> int:
         return 0
 
     metas = _extract_with_progress(console, files, workers=args.workers, batch_size=args.batch_size)
-    manifest = build_manifest(source, dest, files, metas)
+    scheme = _interactive_scheme(console, args.scheme)
+    manifest = build_manifest(source, dest, files, metas, scheme=scheme)
 
     console.print()
     render_summary(console, manifest)
