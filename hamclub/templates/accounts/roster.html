@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Club Roster{% endblock %}
+{% block content %}
+<h1>Club Roster</h1>
+<p class="text-muted">{{ members|length }} approved member{{ members|length|pluralize }}</p>
+<div class="row row-cols-1 row-cols-md-3 g-3">
+  {% for member in members %}
+    <div class="col">
+      <div class="card h-100">
+        <div class="card-body">
+          <h5 class="card-title">{{ member.get_full_name|default:member.username }}</h5>
+          {% if member.callsign %}
+            <p class="callsign mb-1">{{ member.callsign }}</p>
+          {% endif %}
+          {% if member.bio %}
+            <p class="card-text text-muted small">{{ member.bio|truncatewords:20 }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p>No members listed yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}
