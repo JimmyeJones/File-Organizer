@@ -10,6 +10,8 @@ class Meeting(models.Model):
     location = models.CharField(max_length=300)
     description = models.TextField(blank=True)
     recording = models.FileField(upload_to="recordings/", blank=True)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     is_published = models.BooleanField(default=True)
 
     class Meta:

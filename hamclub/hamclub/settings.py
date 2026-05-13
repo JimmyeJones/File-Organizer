@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     "events",
     "gallery",
     "pages",
+    "locations",
 ]
 
 MIDDLEWARE = [
