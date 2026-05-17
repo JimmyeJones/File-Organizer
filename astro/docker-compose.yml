@@ -1,0 +1,17 @@
+services:
+  astro-planner:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: astro-planner:latest
+    container_name: astro-planner
+    ports:
+      - "${ASTRO_PORT:-8000}:8000"
+    environment:
+      ASTRO_DATA_DIR: /data
+    volumes:
+      - astro-data:/data
+    restart: unless-stopped
+
+volumes:
+  astro-data:
