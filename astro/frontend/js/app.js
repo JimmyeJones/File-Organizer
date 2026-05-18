@@ -5,6 +5,7 @@ import { renderTonight } from "./tonight.js";
 import { renderWeather } from "./weather.js";
 import { renderTargets } from "./targets.js";
 import { renderSky } from "./sky.js";
+import { renderSkyMap } from "./skyview.js";
 import { renderSats } from "./sats.js";
 import { renderEvents } from "./events.js";
 import { renderSites } from "./sites.js";
@@ -13,6 +14,7 @@ const renderers = {
   tonight: renderTonight,
   weather: renderWeather,
   targets: renderTargets,
+  skymap: renderSkyMap,
   sky: renderSky,
   satellites: renderSats,
   events: renderEvents,

@@ -32,7 +32,8 @@
     <button class="tab active" data-tab="tonight">Tonight</button>
     <button class="tab" data-tab="weather">Weather</button>
     <button class="tab" data-tab="targets">Targets</button>
-    <button class="tab" data-tab="sky">Sky View</button>
+    <button class="tab" data-tab="skymap">Sky Map</button>
+    <button class="tab" data-tab="sky">GOES</button>
     <button class="tab" data-tab="satellites">Satellites</button>
     <button class="tab" data-tab="events">Events</button>
     <button class="tab" data-tab="sites">Sites</button>
@@ -128,6 +129,58 @@
         <h2 id="target-detail-name">Target detail</h2>
         <canvas id="alt-chart" height="180"></canvas>
         <div id="target-detail-meta" class="meta"></div>
+      </div>
+    </section>
+
+    <!-- Sky Map -->
+    <section class="panel" id="panel-skymap">
+      <div class="card">
+        <div class="skymap-controls">
+          <div class="skymap-info">
+            <span id="skymap-time-label" class="skymap-time-label">—</span>
+            <span id="skymap-hover-info" class="skymap-hover-info"></span>
+          </div>
+          <div class="skymap-btns">
+            <label class="toggle-label">
+              <input type="checkbox" id="sky-show-stars" checked /> Stars
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="sky-show-milkyway" checked /> Milky Way
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="sky-show-constellations" checked /> Constellations
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="sky-show-dso" checked /> DSOs
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="sky-show-planets" checked /> Planets
+            </label>
+            <label class="toggle-label">
+              <input type="checkbox" id="sky-show-labels" checked /> Labels
+            </label>
+            <button id="sky-btn-play">▶ Play</button>
+            <button id="sky-btn-reset">Reset</button>
+          </div>
+        </div>
+        <div class="skymap-wrap">
+          <canvas id="skymap-canvas"></canvas>
+        </div>
+        <div class="skymap-slider-wrap">
+          <span class="skymap-slider-label" id="slider-start">—</span>
+          <input type="range" id="skymap-slider" min="0" max="100" value="0" step="1" />
+          <span class="skymap-slider-label" id="slider-end">—</span>
+        </div>
+        <div id="skymap-legend" class="skymap-legend">
+          <span class="legend-item"><span class="legend-dot" style="background:#ffe4b5"></span> Star</span>
+          <span class="legend-item"><span class="legend-dot" style="background:#ff8866;border-radius:0"></span> Planet</span>
+          <span class="legend-item"><span class="legend-dot galaxy-icon"></span> Galaxy</span>
+          <span class="legend-item"><span class="legend-dot nebula-icon"></span> Nebula</span>
+          <span class="legend-item"><span class="legend-dot cluster-icon"></span> Cluster</span>
+        </div>
+        <p class="muted small" style="margin-top:6px">
+          Click any object for details · Drag to rotate view · Scroll to zoom
+        </p>
       </div>
     </section>
 

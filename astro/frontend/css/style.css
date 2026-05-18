@@ -387,3 +387,142 @@ main {
 
 .leaflet-container { background: #0d0d18; }
 .leaflet-tile { filter: hue-rotate(180deg) invert(0.92) brightness(0.7); }
+
+/* Sky Map */
+.skymap-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.skymap-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.skymap-time-label {
+  font-family: monospace;
+  font-size: 1.1rem;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.skymap-hover-info {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-family: monospace;
+  min-height: 1.2em;
+}
+
+.skymap-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.toggle-label input[type=checkbox] {
+  accent-color: var(--accent);
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+}
+
+.skymap-wrap {
+  display: flex;
+  justify-content: center;
+  background: #000;
+  border-radius: 50%;
+  overflow: hidden;
+  margin: 0 auto 12px;
+  max-width: 780px;
+}
+
+#skymap-canvas {
+  display: block;
+  cursor: default;
+  border-radius: 50%;
+  width: 100%;
+  height: auto;
+}
+
+.skymap-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.skymap-slider-label {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+#skymap-slider {
+  flex: 1;
+  accent-color: var(--accent);
+  background: transparent;
+  height: 4px;
+  cursor: pointer;
+}
+
+.skymap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.galaxy-icon {
+  background: transparent;
+  border: 1.5px solid #dd88ff;
+  border-radius: 50%;
+  width: 12px;
+  height: 6px;
+}
+
+.nebula-icon {
+  background: transparent;
+  border: 1.5px solid #88ffaa;
+  border-radius: 2px;
+  width: 10px;
+  height: 7px;
+}
+
+.cluster-icon {
+  background: transparent;
+  border: 1.5px solid #ffdd88;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+}

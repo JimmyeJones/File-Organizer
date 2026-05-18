@@ -34,6 +34,8 @@ export const api = {
   targets: (lat, lon, opts = {}) => get("/api/targets", { lat, lon, ...opts }),
   altitudeCurve: (id, lat, lon, date) =>
     get(`/api/targets/${id}/altitude-curve`, { lat, lon, date }),
+  planetTrack: (lat, lon, date) => get("/api/skyview/planet-track", { lat, lon, date }),
+  dsoTrack: (lat, lon, date) => get("/api/skyview/dso-track", { lat, lon, date }),
   goesSectors: () => get("/api/goes/sectors"),
   goesLatest: (sector, band) => get("/api/goes/latest", { sector, band }),
   goesAnimation: (sector, band, limit = 12) =>

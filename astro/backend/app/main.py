@@ -12,6 +12,7 @@ from app.routers import (
     goes_router,
     sats_router,
     sites_router,
+    skyview_router,
     targets_router,
     weather_router,
 )
@@ -46,6 +47,7 @@ app.include_router(targets_router.router)
 app.include_router(goes_router.router)
 app.include_router(sats_router.router)
 app.include_router(sites_router.router)
+app.include_router(skyview_router.router)
 
 
 @app.get("/api/health")
