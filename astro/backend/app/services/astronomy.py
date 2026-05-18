@@ -22,7 +22,11 @@ _timescale = None
 def _ensure_loader() -> Loader:
     global _loader
     if _loader is None:
-        eph_dir = settings.data_dir / "ephemeris"
+        # Prefer the image-baked ephemeris dir; fall back to data_dir/ephemeris
+        # so local dev (without ASTRO_EPHEMERIS_DIR set) still works.
+        eph_dir = settings.ephemeris_dir
+        if not eph_dir.exists() or not (eph_dir / settings.ephemeris_file).exists():
+            eph_dir = settings.data_dir / "ephemeris"
         eph_dir.mkdir(parents=True, exist_ok=True)
         _loader = Loader(str(eph_dir))
     return _loader

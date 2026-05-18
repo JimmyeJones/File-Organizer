@@ -21,9 +21,16 @@ from app.routers import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Pre-load ephemeris so the first request isn't slow.
+    # Non-fatal: if ephemeris is missing the server still starts;
+    # astronomy endpoints will return 503 until it becomes available.
+    import logging
     from app.services.astronomy import get_ephemeris, get_timescale
-    get_timescale()
-    get_ephemeris()
+    try:
+        get_timescale()
+        get_ephemeris()
+        logging.info("Ephemeris loaded OK")
+    except Exception as exc:
+        logging.warning("Ephemeris not available at startup: %s", exc)
     yield
 
 

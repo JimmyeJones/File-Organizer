@@ -9,9 +9,12 @@ services:
       - "${ASTRO_PORT:-8000}:8000"
     environment:
       ASTRO_DATA_DIR: /data
+      ASTRO_EPHEMERIS_DIR: /ephemeris
     volumes:
-      - astro-data:/data
+      # Only sites (user data) needs to persist across rebuilds.
+      # Ephemeris is baked into the image at /ephemeris.
+      - astro-sites:/data/sites
     restart: unless-stopped
 
 volumes:
-  astro-data:
+  astro-sites:
