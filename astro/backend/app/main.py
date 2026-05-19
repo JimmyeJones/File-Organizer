@@ -1,9 +1,10 @@
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.config import settings
@@ -70,7 +71,9 @@ def _find_frontend() -> Path | None:
     ]
     for c in candidates:
         if c.exists() and (c / "index.html").exists():
+            logging.info("Frontend found at %s", c)
             return c
+    logging.warning("Frontend not found; checked: %s", [str(c) for c in candidates])
     return None
 
 
@@ -78,6 +81,12 @@ FRONTEND_DIR = _find_frontend()
 if FRONTEND_DIR:
     app.mount("/static", StaticFiles(directory=str(FRONTEND_DIR)), name="static")
 
-    @app.get("/")
-    def index():
-        return FileResponse(str(FRONTEND_DIR / "index.html"))
+
+@app.get("/")
+def index():
+    if not FRONTEND_DIR:
+        return JSONResponse(
+            {"error": "Frontend not found", "hint": "Rebuild the Docker image with: docker compose up --build"},
+            status_code=503,
+        )
+    return FileResponse(str(FRONTEND_DIR / "index.html"))
