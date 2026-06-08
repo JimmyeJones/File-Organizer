@@ -10,7 +10,6 @@ Scores deep-sky catalog entries by:
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
-from typing import Iterable
 
 from app.data.catalog import get_catalog
 from app.services import astronomy
@@ -59,10 +58,8 @@ def rank_targets(
         catalog = [c for c in catalog if _matches_filter(c["type"], type_filter)]
 
     for obj in catalog:
-        altitudes = []
-        for t in sample_times:
-            alt, _ = astronomy.altaz_for_target(obj["ra"], obj["dec"], lat, lon, t)
-            altitudes.append(alt)
+        series = astronomy.altaz_at_times(obj["ra"], obj["dec"], lat, lon, sample_times)
+        altitudes = [alt for alt, _ in series]
 
         peak_alt = max(altitudes)
         if peak_alt < min_altitude:

@@ -1,6 +1,6 @@
 import { api } from "./api.js";
 import { state } from "./state.js";
-import { fmtDateTime, el, toast } from "./util.js";
+import { fmtDateTime } from "./util.js";
 
 export async function renderSats() {
   document.getElementById("btn-sat-refresh").onclick = loadPasses;

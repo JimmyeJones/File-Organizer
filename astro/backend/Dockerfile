@@ -19,11 +19,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python3 -c "\
 import urllib.request, os, sys; \
 os.makedirs('/ephemeris', exist_ok=True); \
+dest = '/ephemeris/de421.bsp'; \
 url = 'https://ssd.jpl.nasa.gov/ftp/eph/planets/bsp/de421.bsp'; \
 print('Downloading JPL de421.bsp (~17 MB)...', flush=True); \
-urllib.request.urlretrieve(url, '/ephemeris/de421.bsp'); \
-size = os.path.getsize('/ephemeris/de421.bsp'); \
-print(f'Ephemeris ready: {size // 1024 // 1024} MB', flush=True) \
+urllib.request.urlretrieve(url, dest); \
+size = os.path.getsize(dest); \
+head = open(dest, 'rb').read(8); \
+sys.exit('ERROR: ephemeris too small (%d bytes) - download likely returned an error page' % size) if size < 1_000_000 else None; \
+sys.exit('ERROR: ephemeris is not a valid SPK/DAF file (got %r)' % head) if not head.startswith((b'NAIF/DAF', b'DAF/')) else None; \
+print('Ephemeris ready: %d MB' % (size // 1024 // 1024), flush=True) \
 "
 
 COPY backend/app ./app

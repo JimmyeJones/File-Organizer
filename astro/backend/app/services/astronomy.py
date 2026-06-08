@@ -224,6 +224,25 @@ def altaz_for_target(
     return float(alt.degrees), float(az.degrees)
 
 
+def altaz_at_times(
+    ra_hours: float,
+    dec_deg: float,
+    lat: float,
+    lon: float,
+    times: list[datetime],
+) -> list[tuple[float, float]]:
+    """Vectorized alt/az for one target across many times (single Skyfield call)."""
+    if not times:
+        return []
+    eph = get_ephemeris()
+    ts = get_timescale()
+    location = eph["earth"] + wgs84.latlon(lat, lon)
+    star = Star(ra_hours=ra_hours, dec_degrees=dec_deg)
+    t = ts.from_datetimes([dt.astimezone(timezone.utc) for dt in times])
+    alt, az, _ = location.at(t).observe(star).apparent().altaz()
+    return [(float(alt.degrees[i]), float(az.degrees[i])) for i in range(len(times))]
+
+
 def altitude_curve(
     ra_hours: float,
     dec_deg: float,

@@ -1,4 +1,4 @@
-import { state, init as initState, onChange, setSite, setDate, refreshSites } from "./state.js";
+import { state, init as initState, onChange, setSite, setDate } from "./state.js";
 import { api } from "./api.js";
 import { toast } from "./util.js";
 import { renderTonight } from "./tonight.js";

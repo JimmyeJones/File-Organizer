@@ -1,4 +1,4 @@
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from fastapi import APIRouter, HTTPException, Query
 
@@ -42,7 +42,7 @@ def altitude_curve(
     target_date = date.fromisoformat(date_str) if date_str else datetime.now(timezone.utc).date()
     twilight = astronomy.compute_twilight(lat, lon, target_date)
     start = twilight.sunset or datetime.combine(target_date, datetime.min.time(), tzinfo=timezone.utc)
-    end = twilight.sunrise or (start + __import__("datetime").timedelta(hours=14))
+    end = twilight.sunrise or (start + timedelta(hours=14))
     curve = astronomy.altitude_curve(obj["ra"], obj["dec"], lat, lon, start, end, step_minutes)
     return {
         "object": obj,

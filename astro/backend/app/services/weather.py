@@ -189,11 +189,18 @@ async def aggregate(lat: float, lon: float) -> dict:
     }
 
 
+# Fields that must not be naively averaged across sources (e.g. circular
+# quantities like wind direction, where mean(350°, 10°) would be 180°).
+_NON_AVERAGEABLE = {"wind_dir_deg"}
+
+
 def _build_consensus(sources: list[dict]) -> list[dict]:
     """Merge all sources into one hourly consensus series.
 
-    For each hour bucket, average the cloud_cover_pct across sources that have
-    it. Include seeing/transparency only from 7timer.
+    Times from different sources use different offsets (Open-Meteo/7Timer are
+    UTC; NWS is local-with-offset), so normalize every timestamp to a UTC hour
+    before bucketing. For each hour bucket, average numeric fields across the
+    sources that provide them.
     """
     bucket: dict[str, dict[str, list[float]]] = {}
     for src in sources:
@@ -203,10 +210,12 @@ def _build_consensus(sources: list[dict]) -> list[dict]:
             t = h.get("time")
             if not t:
                 continue
-            hour_key = t[:13]  # YYYY-MM-DDTHH
+            hour_key = _utc_hour_key(t)
+            if hour_key is None:
+                continue
             b = bucket.setdefault(hour_key, {})
             for k, v in h.items():
-                if k == "time" or v is None:
+                if k == "time" or v is None or k in _NON_AVERAGEABLE:
                     continue
                 if isinstance(v, (int, float)):
                     b.setdefault(k, []).append(float(v))
@@ -219,6 +228,17 @@ def _build_consensus(sources: list[dict]) -> list[dict]:
             entry[k] = round(sum(vals) / len(vals), 2)
         consensus.append(entry)
     return consensus
+
+
+def _utc_hour_key(t: str) -> str | None:
+    """Parse an ISO timestamp (any offset) and return its UTC 'YYYY-MM-DDTHH'."""
+    try:
+        dt = datetime.fromisoformat(t.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).strftime("%Y-%m-%dT%H")
 
 
 def _get(h: dict, key: str, idx: int):

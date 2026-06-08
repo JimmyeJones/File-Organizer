@@ -7,8 +7,7 @@ animation frame lists.
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
-from typing import Iterable
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -81,7 +80,9 @@ def latest_image_url(sector: str, band: str = "GEOCOLOR", resolution: str | None
     if not cfg:
         raise ValueError(f"unknown sector: {sector}")
     res = resolution or cfg["resolutions"][0]
-    return f"{CDN_BASE}/{cfg['path']}/{band}/latest_{band}_{res}.jpg"
+    # NOAA STAR CDN serves the most-recent frame as "<resolution>.jpg" in each
+    # band directory, e.g. .../GOES19/ABI/CONUS/GEOCOLOR/1250x750.jpg
+    return f"{CDN_BASE}/{cfg['path']}/{band}/{res}.jpg"
 
 
 async def list_animation_frames(
@@ -97,7 +98,7 @@ async def list_animation_frames(
     res = resolution or cfg["resolutions"][0]
     listing_url = f"{CDN_BASE}/{cfg['path']}/{band}/"
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(headers={"User-Agent": settings.user_agent}) as client:
         try:
             r = await client.get(listing_url, timeout=settings.request_timeout)
             r.raise_for_status()
@@ -118,16 +119,13 @@ async def list_animation_frames(
         if fname in seen:
             continue
         seen.add(fname)
-        ts_raw = m.group(1)  # YYYYDDDHHMM
+        ts_raw = m.group(1)  # YYYYDDDHHMM (year, day-of-year, hour, minute)
         try:
             year = int(ts_raw[:4])
             doy = int(ts_raw[4:7])
             hour = int(ts_raw[7:9])
             minute = int(ts_raw[9:11])
-            dt = datetime(year, 1, 1, hour, minute, tzinfo=timezone.utc)
-            dt = dt.replace(month=1, day=1)
-            from datetime import timedelta as _td
-            dt = dt + _td(days=doy - 1)
+            dt = datetime(year, 1, 1, hour, minute, tzinfo=timezone.utc) + timedelta(days=doy - 1)
         except Exception:
             dt = None
         frames.append({

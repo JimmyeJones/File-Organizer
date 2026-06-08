@@ -5,8 +5,8 @@ Skyfield to compute upcoming visible passes.
 """
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import Iterable
 
 import httpx
 from skyfield.api import EarthSatellite, wgs84
@@ -19,6 +19,10 @@ CELESTRAK_GROUPS = {
     "visual": "https://celestrak.org/NORAD/elements/gp.php?GROUP=visual&FORMAT=tle",
     "starlink": "https://celestrak.org/NORAD/elements/gp.php?GROUP=starlink&FORMAT=tle",
 }
+
+# Some groups (Starlink) contain thousands of objects. Propagating all of them
+# would take minutes and time out the request, so cap how many we process.
+_MAX_SATS = {"starlink": 90}
 
 _tle_cache: dict[str, tuple[datetime, list[tuple[str, str, str]]]] = {}
 _TLE_TTL = timedelta(hours=4)
@@ -54,12 +58,28 @@ async def predict_passes(
     hours: int = 24,
     min_altitude: float = 20.0,
 ) -> list[dict]:
+    tles = await _fetch_tles(group)
+    cap = _MAX_SATS.get(group)
+    if cap:
+        tles = tles[:cap]
+    # SGP4 propagation is CPU-bound and synchronous; run it off the event loop
+    # so the server stays responsive to other requests.
+    return await asyncio.to_thread(
+        _compute_passes, tles, lat, lon, hours, min_altitude
+    )
+
+
+def _compute_passes(
+    tles: list[tuple[str, str, str]],
+    lat: float,
+    lon: float,
+    hours: int,
+    min_altitude: float,
+) -> list[dict]:
     ts = get_timescale()
     eph = get_ephemeris()
     observer = wgs84.latlon(lat, lon)
     sun = eph["sun"]
-
-    tles = await _fetch_tles(group)
 
     start = datetime.now(timezone.utc)
     end = start + timedelta(hours=hours)

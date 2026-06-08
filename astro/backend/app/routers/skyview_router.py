@@ -71,10 +71,11 @@ def dso_track(
     catalog = get_catalog()
     dso_tracks = []
     for obj in catalog:
-        curve = []
-        for t in times:
-            alt, az = astronomy.altaz_for_target(obj["ra"], obj["dec"], lat, lon, t)
-            curve.append({"t": t.isoformat(), "alt": round(alt, 1), "az": round(az, 1)})
+        series = astronomy.altaz_at_times(obj["ra"], obj["dec"], lat, lon, times)
+        curve = [
+            {"t": times[i].isoformat(), "alt": round(series[i][0], 1), "az": round(series[i][1], 1)}
+            for i in range(len(times))
+        ]
         dso_tracks.append({
             "id": obj["id"],
             "name": obj["name"],

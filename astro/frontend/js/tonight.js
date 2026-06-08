@@ -84,7 +84,7 @@ function renderMoon(moon) {
     el("div", {}, el("strong", {}, moon.phase_name)),
     el("div", { class: "muted small" }, `${Math.round(illum * 100)}% illuminated`),
     el("div", { class: "muted small" }, `Rise: ${fmtTime(moon.rise)} · Set: ${fmtTime(moon.set)}`),
-    el("div", { class: "muted small" }, `Now: alt ${moon.altitude_deg.toFixed(0)}°, az ${moon.azimuth_deg.toFixed(0)}°`),
+    el("div", { class: "muted small" }, `Mid-dark: alt ${moon.altitude_deg.toFixed(0)}°, az ${moon.azimuth_deg.toFixed(0)}°`),
   );
   card.appendChild(viz);
   card.appendChild(info);

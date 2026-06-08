@@ -1,6 +1,6 @@
 from datetime import date, datetime, timezone
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
 from app.services import astronomy
 from app.services.events import upcoming_meteor_showers, visible_planets
@@ -16,14 +16,23 @@ def sun_moon(
 ):
     target_date = date.fromisoformat(date_str) if date_str else datetime.now(timezone.utc).date()
     twilight = astronomy.compute_twilight(lat, lon, target_date)
-    midpoint_default = datetime.combine(target_date, datetime.min.time(), tzinfo=timezone.utc)
-    moon = astronomy.moon_info(lat, lon, midpoint_default.replace(hour=23))
+
+    # Report the Moon at the middle of the dark window (most relevant for an
+    # imaging session) rather than an arbitrary fixed hour.
+    dusk = twilight.astronomical_dusk or twilight.nautical_dusk or twilight.sunset
+    dawn = twilight.astronomical_dawn or twilight.nautical_dawn or twilight.sunrise
+    if dusk and dawn and dawn > dusk:
+        moon_moment = dusk + (dawn - dusk) / 2
+    else:
+        moon_moment = datetime.combine(target_date, datetime.min.time(), tzinfo=timezone.utc).replace(hour=23)
+    moon = astronomy.moon_info(lat, lon, moon_moment)
     return {
         "date": target_date.isoformat(),
         "lat": lat,
         "lon": lon,
         "twilight": twilight.to_dict(),
         "moon": moon,
+        "moon_moment": moon_moment.isoformat(),
     }
 
 

@@ -589,10 +589,9 @@ export async function renderSkyMap() {
 
   // Fetch tracks from backend (planet positions + DSO alt/az curves)
   try {
-    const [ptRes, dsoRes, sunMoon] = await Promise.all([
+    const [ptRes, dsoRes] = await Promise.all([
       api.planetTrack(site.lat, site.lon, date),
       api.dsoTrack(site.lat, site.lon, date),
-      api.sunMoon(site.lat, site.lon, date),
     ]);
 
     // Build time axis from planet track (consistent steps)
