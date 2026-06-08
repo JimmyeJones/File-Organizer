@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ album.title }} — Gallery{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'album_list' %}">Gallery</a></li>
+    <li class="breadcrumb-item active">{{ album.title }}</li>
+  </ol>
+</nav>
+
+<h1>{{ album.title }}</h1>
+{% if album.description %}
+  <p class="text-muted">{{ album.description }}</p>
+{% endif %}
+
+<div class="row row-cols-2 row-cols-md-4 g-3 photo-grid">
+  {% for photo in photos %}
+    <div class="col">
+      <a href="{{ photo.image.url }}" target="_blank">
+        <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="rounded">
+      </a>
+      {% if photo.caption %}
+        <p class="text-muted small mt-1">{{ photo.caption }}</p>
+      {% endif %}
+    </div>
+  {% empty %}
+    <p>No photos in this album yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

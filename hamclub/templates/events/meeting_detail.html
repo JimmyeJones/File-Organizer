@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}{{ meeting.title }}{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{% url 'meeting_list' %}">Events</a></li>
+    <li class="breadcrumb-item active">{{ meeting.title }}</li>
+  </ol>
+</nav>
+
+<h1>{{ meeting.title }}</h1>
+<p class="text-muted lead">
+  {{ meeting.date|date:"l, F j, Y" }} at {{ meeting.time|time:"g:i A" }} &mdash; {{ meeting.location }}
+</p>
+
+{% if meeting.description %}
+  <div class="mb-4">{{ meeting.description|linebreaks }}</div>
+{% endif %}
+
+{% if meeting.slots.all %}
+  <h4>Presentation Slots</h4>
+  <div class="row g-3 mb-4">
+    {% for slot in meeting.slots.all %}
+      <div class="col-md-6">
+        {% if slot.is_claimed %}
+          <div class="card">
+            <div class="card-body">
+              <h6 class="card-title">{{ slot.topic|default:"Untitled Presentation" }}</h6>
+              <p class="card-text text-muted small">{{ slot.presenter }}</p>
+              {% if slot.description %}
+                <p class="card-text small">{{ slot.description }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% else %}
+          <div class="card slot-available">
+            <div class="card-body">
+              <h6 class="card-title text-success">Open Slot</h6>
+              <p class="card-text text-muted small">No presenter yet</p>
+              {% if user.is_authenticated and user.is_approved and not meeting.is_past %}
+                <a href="{% url 'claim_slot' meeting.pk slot.pk %}" class="btn btn-sm btn-success">Volunteer</a>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% if meeting.is_past %}
+  {% if meeting.recording %}
+    {% if user.is_authenticated and user.is_approved %}
+      <a href="{% url 'meeting_recording' meeting.pk %}" class="btn btn-primary">Watch Recording</a>
+    {% else %}
+      <p class="text-muted"><em>Recording available — <a href="{% url 'login' %}">log in</a> as an approved member to watch.</em></p>
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+{% if meeting.latitude and meeting.longitude %}
+<h4 class="mt-4">Venue Map</h4>
+<div id="meeting-map" style="height:300px; border:1px solid #dee2e6; border-radius:.375rem; margin-bottom:1rem;"></div>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  var lat = {{ meeting.latitude }}, lng = {{ meeting.longitude }};
+  var map = L.map('meeting-map').setView([lat, lng], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(map);
+  L.marker([lat, lng]).addTo(map)
+    .bindPopup('<strong>{{ meeting.title|escapejs }}</strong><br>{{ meeting.location|escapejs }}')
+    .openPopup();
+})();
+</script>
+{% endif %}
+
+<a href="{% url 'meeting_list' %}" class="btn btn-link ps-0">&larr; Back to Events</a>
+{% endblock %}

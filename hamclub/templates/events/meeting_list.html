@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<h1>Club Meetings</h1>
+
+{% if upcoming %}
+  <h4 class="mt-4 text-primary">Upcoming</h4>
+  {% for meeting in upcoming %}
+    <div class="card meeting-card mb-3">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="card-title mb-1"><a href="{% url 'meeting_detail' meeting.pk %}">{{ meeting.title }}</a></h5>
+            <p class="text-muted mb-1">{{ meeting.date|date:"l, F j, Y" }} at {{ meeting.time|time:"g:i A" }}</p>
+            <p class="mb-1"><small>{{ meeting.location }}</small></p>
+          </div>
+          <a href="{% url 'meeting_detail' meeting.pk %}" class="btn btn-sm btn-outline-primary">Details</a>
+        </div>
+        {% with open_slots=meeting.slots.all %}
+          {% if open_slots %}
+            <div class="mt-2">
+              {% for slot in open_slots %}
+                {% if not slot.is_claimed %}
+                  <span class="badge bg-success me-1">Open presentation slot</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+      </div>
+    </div>
+  {% endfor %}
+{% else %}
+  <p class="text-muted mt-3">No upcoming meetings scheduled.</p>
+{% endif %}
+
+{% if past %}
+  <h4 class="mt-5 text-secondary">Past Meetings</h4>
+  {% for meeting in past %}
+    <div class="card meeting-card past mb-2">
+      <div class="card-body py-2 d-flex justify-content-between align-items-center">
+        <div>
+          <strong><a href="{% url 'meeting_detail' meeting.pk %}">{{ meeting.title }}</a></strong>
+          <span class="text-muted ms-2 small">{{ meeting.date|date:"F j, Y" }}</span>
+        </div>
+        {% if meeting.recording %}
+          <span class="badge bg-secondary">Recording available</span>
+        {% endif %}
+      </div>
+    </div>
+  {% endfor %}
+{% endif %}
+
+{% endblock %}

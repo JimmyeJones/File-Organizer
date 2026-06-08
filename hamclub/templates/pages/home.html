@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}HAM Radio Club — Home{% endblock %}
+{% block content %}
+
+<div class="hero rounded mb-4 text-center">
+  <h1 class="display-5 fw-bold">HAM Radio Club</h1>
+  <p class="lead">Amateur radio operators serving the community</p>
+  {% if not user.is_authenticated %}
+    <a href="{% url 'register' %}" class="btn btn-light btn-lg me-2">Join the Club</a>
+    <a href="{% url 'login' %}" class="btn btn-outline-light btn-lg">Log In</a>
+  {% endif %}
+</div>
+
+{% if next_meeting %}
+<div class="card meeting-card mb-4">
+  <div class="card-header bg-primary text-white">Next Meeting</div>
+  <div class="card-body">
+    <h5 class="card-title">{{ next_meeting.title }}</h5>
+    <p class="card-text">
+      <strong>{{ next_meeting.date|date:"l, F j, Y" }}</strong> at {{ next_meeting.time|time:"g:i A" }}<br>
+      {{ next_meeting.location }}
+    </p>
+    {% if next_meeting.slots.all %}
+      <p class="mb-1"><strong>Presentation slots:</strong></p>
+      <ul>
+        {% for slot in next_meeting.slots.all %}
+          <li>
+            {% if slot.is_claimed %}
+              <strong>{{ slot.topic|default:"TBD" }}</strong> — {{ slot.presenter }}
+            {% else %}
+              <span class="text-success">Open slot</span>
+              {% if user.is_authenticated and user.is_approved %}
+                — <a href="{% url 'claim_slot' next_meeting.pk slot.pk %}">Volunteer</a>
+              {% endif %}
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <a href="{% url 'meeting_detail' next_meeting.pk %}" class="btn btn-primary btn-sm">Details</a>
+  </div>
+</div>
+{% endif %}
+
+{% if page %}
+<div class="card">
+  <div class="card-body">
+    {{ page.content|safe }}
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Gallery{% endblock %}
+{% block content %}
+<h1>Photo Gallery</h1>
+<div class="row row-cols-1 row-cols-md-3 g-4 mt-1">
+  {% for album in albums %}
+    <div class="col">
+      <div class="card h-100">
+        {% with cover=album.cover_photo %}
+          {% if cover %}
+            <img src="{{ cover.image.url }}" class="card-img-top" style="height:200px;object-fit:cover;" alt="{{ album.title }}">
+          {% else %}
+            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height:200px;">
+              <span class="text-white">No photos yet</span>
+            </div>
+          {% endif %}
+        {% endwith %}
+        <div class="card-body">
+          <h5 class="card-title">{{ album.title }}</h5>
+          {% if album.description %}
+            <p class="card-text text-muted small">{{ album.description|truncatewords:15 }}</p>
+          {% endif %}
+          <p class="card-text text-muted small">{{ album.photos.count }} photo{{ album.photos.count|pluralize }}</p>
+          <a href="{% url 'album_detail' album.pk %}" class="btn btn-sm btn-outline-primary">View Album</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <p>No albums yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

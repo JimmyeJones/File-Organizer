@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Club Map{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="mb-0">Club Map</h1>
+  <span class="text-muted small">{{ pin_count }} location{{ pin_count|pluralize }}</span>
+</div>
+
+<div id="public-map" style="height:520px; border:1px solid #dee2e6; border-radius:.375rem;"></div>
+
+{% if pin_count == 0 %}
+  <p class="text-muted mt-3">No locations have been pinned yet. Admins can add pins via the <a href="/admin/">admin panel</a>.</p>
+{% endif %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function () {
+  var pins = {{ pins_json|safe }};
+
+  var map = L.map('public-map');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 19,
+  }).addTo(map);
+
+  var icons = {
+    'Meeting': '📅',
+    'Meeting Venue': '🏛️',
+    'Repeater Site': '📡',
+    'Event': '📌',
+    'Other': '📍',
+  };
+
+  function makeIcon(category) {
+    var emoji = icons[category] || '📍';
+    return L.divIcon({
+      html: '<div style="font-size:24px; line-height:1; filter:drop-shadow(0 1px 2px rgba(0,0,0,.4))">' + emoji + '</div>',
+      className: '',
+      iconSize: [28, 28],
+      iconAnchor: [14, 24],
+      popupAnchor: [0, -24],
+    });
+  }
+
+  if (pins.length === 0) {
+    map.setView([39.8283, -98.5795], 4);
+    return;
+  }
+
+  var bounds = [];
+  pins.forEach(function (pin) {
+    var latlng = [pin.lat, pin.lng];
+    bounds.push(latlng);
+    var popup = '<strong>' + pin.name + '</strong>';
+    if (pin.category) popup += '<br><span style="color:#6c757d;font-size:12px">' + pin.category + '</span>';
+    if (pin.description) popup += '<br>' + pin.description;
+    if (pin.url) popup += '<br><a href="' + pin.url + '">View details &rarr;</a>';
+    L.marker(latlng, { icon: makeIcon(pin.category) }).addTo(map).bindPopup(popup);
+  });
+
+  if (bounds.length === 1) {
+    map.setView(bounds[0], 14);
+  } else {
+    map.fitBounds(bounds, { padding: [40, 40] });
+  }
+})();
+</script>
+{% endblock %}
